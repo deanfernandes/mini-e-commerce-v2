@@ -62,8 +62,7 @@ namespace AuthService.Api.Controllers
             if (user == null)
                 return Unauthorized("Invalid email or password");
 
-            var hash = PasswordService.HashPassword(dto.Password);
-            if (user.PasswordHash != hash)
+            if (!PasswordService.VerifyPassword(dto.Password, user.PasswordHash))
                 return Unauthorized("Invalid email or password");
 
             var token = GenerateJwtToken(user);

@@ -42,5 +42,28 @@ namespace AuthService.Tests
             Assert.NotNull(decoded);
             Assert.True(decoded.Length > 0);
         }
+
+        [Fact]
+        public void VerifyPassword_ShouldReturnTrue_ForMatchingPasswordAndHash()
+        {
+            var password = "TestPass!";
+            var hashed = PasswordService.HashPassword(password);
+
+            var result = PasswordService.VerifyPassword(password, hashed);
+
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void VerifyPassword_ShouldReturnFalse_ForNonMatchingPassword()
+        {
+            var password = "TestPass!";
+            var wrongPassword = "WrongPass!";
+            var hashed = PasswordService.HashPassword(password);
+
+            var result = PasswordService.VerifyPassword(wrongPassword, hashed);
+
+            Assert.False(result);
+        }
     }
 }

@@ -12,5 +12,11 @@ namespace AuthService.Api.Services
             var hash = sha.ComputeHash(bytes);
             return Convert.ToBase64String(hash);
         }
+
+        public static bool VerifyPassword(string plainPassword, string hashedPassword)
+        {
+            var hashOfInput = HashPassword(plainPassword);
+            return hashOfInput == hashedPassword;
+        }
     }
 }
