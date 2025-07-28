@@ -2,7 +2,7 @@ using Confluent.Kafka;
 
 namespace AuthService.Api.Services
 {
-    public class KafkaProducerService
+    public class KafkaProducerService : IKafkaProducerService
     {
         private readonly IProducer<Null, string> _producer;
         private readonly string _topic;

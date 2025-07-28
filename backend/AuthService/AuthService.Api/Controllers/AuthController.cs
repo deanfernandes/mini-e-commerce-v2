@@ -19,9 +19,9 @@ namespace AuthService.Api.Controllers
     {
         private readonly IUserRepository _userRepository;
         private readonly IConfiguration _config;
-        private readonly KafkaProducerService _kafkaProducer;
+        private readonly IKafkaProducerService _kafkaProducer;
 
-        public AuthController(IUserRepository userRepository, IConfiguration config, KafkaProducerService kafkaProducer)
+        public AuthController(IUserRepository userRepository, IConfiguration config, IKafkaProducerService kafkaProducer)
         {
             _userRepository = userRepository;
             _config = config;

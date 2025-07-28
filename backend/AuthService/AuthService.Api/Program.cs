@@ -18,7 +18,7 @@ namespace AuthService.Api {
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddSingleton<KafkaProducerService>();
+            builder.Services.AddSingleton<IKafkaProducerService, KafkaProducerService>();
 
             builder.Services.AddScoped<IUserRepository, UserRepository>();
 

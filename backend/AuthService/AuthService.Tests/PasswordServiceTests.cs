@@ -44,7 +44,7 @@ namespace AuthService.Tests
         }
 
         [Fact]
-        public void VerifyPassword_ShouldReturnTrue_ForMatchingPasswordAndHash()
+        public void VerifyPassword_ForMatchingPasswordAndHash_ShouldReturnTrue()
         {
             var password = "TestPass!";
             var hashed = PasswordService.HashPassword(password);
@@ -55,7 +55,7 @@ namespace AuthService.Tests
         }
 
         [Fact]
-        public void VerifyPassword_ShouldReturnFalse_ForNonMatchingPassword()
+        public void VerifyPassword_ForNonMatchingPassword_ShouldReturnFalse()
         {
             var password = "TestPass!";
             var wrongPassword = "WrongPass!";
