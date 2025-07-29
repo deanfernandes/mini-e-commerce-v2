@@ -17,14 +17,25 @@ namespace AuthService.Tests
         {
             var mockRepo = new Mock<IUserRepository>();
             var mockKafka = new Mock<IKafkaProducerService>();
+
+            var mockJwtSection = new Mock<IConfigurationSection>();
+            mockJwtSection.Setup(x => x["SecretKey"]).Returns("YourSuperSecretKey1234567890123456");
+            mockJwtSection.Setup(x => x["Issuer"]).Returns("your-issuer");
+            mockJwtSection.Setup(x => x["Audience"]).Returns("your-audience");
+            mockJwtSection.Setup(x => x["ExpiresInMinutes"]).Returns("60");
+
             var mockConfig = new Mock<IConfiguration>();
+            mockConfig.Setup(x => x.GetSection("JwtSettings")).Returns(mockJwtSection.Object);
+
             var dto = new RegisterUserDto
             {
                 Username = "anon",
                 Email = "anon@example.com",
                 Password = "Password123!"
             };
+
             mockRepo.Setup(r => r.EmailExistsAsync(dto.Email)).ReturnsAsync(false);
+
             var controller = new AuthController(mockRepo.Object, mockConfig.Object, mockKafka.Object);
 
             var result = await controller.Register(dto);
