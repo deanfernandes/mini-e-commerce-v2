@@ -49,7 +49,12 @@ namespace AuthService.Api.Controllers
             await _userRepository.AddUserAsync(user);
             await _userRepository.SaveChangesAsync();
 
-            await _kafkaProducer.ProduceUserRegisteredAsync(new UserRegisteredMessage { Email = user.Email });
+            var token = GenerateEmailConfirmationToken(user);
+            await _kafkaProducer.ProduceUserRegisteredAsync(new UserRegisteredMessage
+            {
+                Email = user.Email,
+                Token = token
+            });
 
             return CreatedAtAction(nameof(Register), new { id = user.UserId }, new { user.UserId, user.Username, user.Email });
         }
@@ -121,6 +126,65 @@ namespace AuthService.Api.Controllers
             return NoContent();
         }
 
+        [HttpGet("confirm")]
+        public async Task<IActionResult> ConfirmEmail([FromQuery] string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+                return BadRequest("Token is required.");
+
+            var jwtSettings = _config.GetSection("JwtSettings");
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!));
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            try
+            {
+                var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtSettings["Issuer"],
+                    ValidateAudience = true,
+                    ValidAudience = jwtSettings["Audience"],
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = key,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                }, out SecurityToken validatedToken);
+
+                var tokenType = principal.FindFirst("token_type")?.Value;
+                if (tokenType != "email_confirmation")
+                    return BadRequest("Invalid token type.");
+
+                var userIdClaim = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim))
+                    return BadRequest("Invalid token payload.");
+
+                if (!Guid.TryParse(userIdClaim, out var userId))
+                {
+                    return BadRequest("Invalid user ID in token.");
+                }
+
+                var user = await _userRepository.GetUserByIdAsync(userId);
+                if (user == null)
+                    return NotFound("User not found.");
+
+                if (user.IsEmailVerified)
+                    return Ok("Email already confirmed.");
+
+                user.IsEmailVerified = true;
+                await _userRepository.SaveChangesAsync();
+
+                return Ok("Email confirmed successfully.");
+            }
+            catch (SecurityTokenExpiredException)
+            {
+                return BadRequest("Token has expired.");
+            }
+            catch (Exception)
+            {
+                return BadRequest("Invalid token.");
+            }
+        }
+
         private string GenerateJwtToken(User user)
         {
             var jwtSettings = _config.GetSection("JwtSettings");
@@ -139,6 +203,30 @@ namespace AuthService.Api.Controllers
                 audience: jwtSettings["Audience"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(jwtSettings["ExpiresInMinutes"])),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        private string GenerateEmailConfirmationToken(User user)
+        {
+            var jwtSettings = _config.GetSection("JwtSettings");
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim("token_type", "email_confirmation")
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: jwtSettings["Issuer"],
+                audience: jwtSettings["Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(24),
                 signingCredentials: creds
             );
 
