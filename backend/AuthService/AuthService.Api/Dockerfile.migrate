@@ -11,4 +11,4 @@ COPY . ./
 RUN dotnet tool install --global dotnet-ef --version 7.0.0
 ENV PATH="$PATH:/root/.dotnet/tools"
 
-ENTRYPOINT ["dotnet", "ef", "database", "update", "--no-build", "--project", "backend/AuthService/AuthService.Api/AuthService.Api.csproj"]
+ENTRYPOINT ["dotnet", "ef", "database", "update", "--project", "backend/AuthService/AuthService.Api/AuthService.Api.csproj"]
