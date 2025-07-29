@@ -10,6 +10,7 @@ using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json;
 using AuthService.Api.Repositories;
+using Kafka.Contracts.Messages;
 
 namespace AuthService.Api.Controllers
 {
@@ -48,8 +49,7 @@ namespace AuthService.Api.Controllers
             await _userRepository.AddUserAsync(user);
             await _userRepository.SaveChangesAsync();
 
-            var @event = JsonSerializer.Serialize(new { user.UserId, user.Email, user.Username });
-            await _kafkaProducer.ProduceUserRegisteredAsync(@event);
+            await _kafkaProducer.ProduceUserRegisteredAsync(new UserRegisteredMessage { Email = user.Email });
 
             return CreatedAtAction(nameof(Register), new { id = user.UserId }, new { user.UserId, user.Username, user.Email });
         }

@@ -1,7 +1,9 @@
+using Kafka.Contracts.Messages;
+
 namespace AuthService.Api.Services
 {
     public interface IKafkaProducerService
     {
-        Task ProduceUserRegisteredAsync(string message);
+        public Task ProduceUserRegisteredAsync(UserRegisteredMessage @event);
     }
 }

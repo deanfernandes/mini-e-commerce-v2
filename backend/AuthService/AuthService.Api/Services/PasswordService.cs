@@ -3,7 +3,7 @@ using System.Text;
 
 namespace AuthService.Api.Services
 {
-    public class PasswordService
+    public static class PasswordService
     {
         public static string HashPassword(string password)
         {

@@ -2,22 +2,10 @@ using Moq;
 using AuthService.Api.Repositories;
 using AuthService.Api.Services;
 using Microsoft.Extensions.Configuration;
-
-
-
-
-
+using Kafka.Contracts.Messages;
 using AuthService.Api.Controllers;
 using AuthService.Api.Models;
-
-
 using Microsoft.AspNetCore.Mvc;
-
-
-using System.Text.Json;
-using System.Threading.Tasks;
-using Xunit;
-using Microsoft.AspNetCore.Routing;
 
 namespace AuthService.Tests
 {
@@ -47,7 +35,7 @@ namespace AuthService.Tests
             mockRepo.Verify(r => r.EmailExistsAsync(dto.Email), Times.Once);
             mockRepo.Verify(r => r.AddUserAsync(It.IsAny<User>()), Times.Once);
             mockRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
-            mockKafka.Verify(k => k.ProduceUserRegisteredAsync(It.IsAny<string>()), Times.Once);
+            mockKafka.Verify(k => k.ProduceUserRegisteredAsync(It.IsAny<UserRegisteredMessage>()), Times.Once);
         }
     }
 }

@@ -1,4 +1,7 @@
+using System.Text.Json;
 using Confluent.Kafka;
+using Kafka.Contracts.Messages;
+using Kafka.Contracts.Topics;
 
 namespace AuthService.Api.Services
 {
@@ -13,13 +16,13 @@ namespace AuthService.Api.Services
             {
                 BootstrapServers = config["KafkaSettings:BootstrapServers"]
             };
-            _topic = config["KafkaSettings:TopicUserRegistered"];
             _producer = new ProducerBuilder<Null, string>(kafkaConfig).Build();
         }
 
-        public async Task ProduceUserRegisteredAsync(string message)
+        public async Task ProduceUserRegisteredAsync(UserRegisteredMessage @event)
         {
-            await _producer.ProduceAsync(_topic, new Message<Null, string> { Value = message });
+            var message = JsonSerializer.Serialize(@event);
+            await _producer.ProduceAsync(Topics.UserRegistered, new Message<Null, string> { Value = message });
         }
     }
 }
