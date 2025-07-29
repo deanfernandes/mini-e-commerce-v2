@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+
+  migrate:
+    build:
+      context: ../../..
+      dockerfile: backend/AuthService/AuthService.Api/Dockerfile.migrate
+    depends_on:
+      - db
+    environment:
+      ConnectionStrings__DefaultConnection: ${CONNECTIONSTRINGS__DEFAULTCONNECTION}
+
+  api:
+    build:
+      context: ../../..
+      dockerfile: backend/AuthService/AuthService.Api/Dockerfile
+    depends_on:
+      - db
+      - migrate
+    environment:
+      ConnectionStrings__DefaultConnection: ${CONNECTIONSTRINGS__DEFAULTCONNECTION}
+      KafkaSettings__BootstrapServers: ${KAFKASETTINGS__BOOTSTRAPSERVERS}
+      JwtSettings__SecretKey: ${JWTSETTINGS__SECRETKEY}
+      JwtSettings__Issuer: ${JWTSETTINGS__ISSUER}
+      JwtSettings__Audience: ${JWTSETTINGS__AUDIENCE}
+      JwtSettings__ExpiresInMinutes: ${JWTSETTINGS__EXPIRESINMINUTES}
+    ports:
+      - "8080:8080"

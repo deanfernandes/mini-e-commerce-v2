@@ -1,0 +1,14 @@
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS migrate
+
+WORKDIR /src
+
+COPY backend/Kafka.Contracts/Kafka.Contracts.csproj backend/Kafka.Contracts/
+COPY backend/AuthService/AuthService.Api/AuthService.Api.csproj backend/AuthService/AuthService.Api/
+RUN dotnet restore backend/AuthService/AuthService.Api/AuthService.Api.csproj
+
+COPY . ./
+
+RUN dotnet tool install --global dotnet-ef --version 7.0.0
+ENV PATH="$PATH:/root/.dotnet/tools"
+
+ENTRYPOINT ["dotnet", "ef", "database", "update", "--no-build", "--project", "backend/AuthService/AuthService.Api/AuthService.Api.csproj"]
