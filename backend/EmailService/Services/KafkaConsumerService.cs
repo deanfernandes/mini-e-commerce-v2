@@ -15,11 +15,11 @@ public class KafkaConsumerService
 
     public void StartConsuming(Action<string> handleMessage)
     {
-        var kafkaSection = _config.GetSection("KafkaSettings");
+        var kafkaSection = _config.GetSection("KAFKASETTINGS");
 
         var consumerConfig = new ConsumerConfig
         {
-            BootstrapServers = kafkaSection["BootstrapServers"],
+            BootstrapServers = kafkaSection["BOOTSTRAPSERVERS"],
             GroupId = "email-service-consumer-group",
             AutoOffsetReset = AutoOffsetReset.Earliest
         };

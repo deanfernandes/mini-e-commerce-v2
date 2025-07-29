@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Kafka.Contracts.Messages;
 using EmailService.Services;
+using Microsoft.Extensions.Configuration;
 
 namespace EmailService
 {
@@ -9,9 +10,7 @@ namespace EmailService
         static void Main(string[] args)
         {
             var config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: false)
-                .AddJsonFile("appsettings.Development.json", optional: false)
+                .AddEnvironmentVariables()
                 .Build();
 
             var emailService = new EmailService(config);
