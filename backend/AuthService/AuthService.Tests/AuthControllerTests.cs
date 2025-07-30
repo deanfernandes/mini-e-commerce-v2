@@ -18,12 +18,15 @@ namespace AuthService.Tests
         private readonly Mock<IConfiguration> _mockConfig;
         private readonly Mock<IConfigurationSection> _mockJwtSection;
 
+        private readonly Mock<IJwtService> _mockJwtService;
+
         public AuthControllerTests()
         {
             _mockRepo = new Mock<IUserRepository>();
             _mockKafka = new Mock<IKafkaProducerService>();
             _mockJwtSection = new Mock<IConfigurationSection>();
             _mockConfig = new Mock<IConfiguration>();
+            _mockJwtService = new Mock<IJwtService>();
 
             _mockJwtSection.Setup(x => x["SecretKey"]).Returns("YourSuperSecretKey1234567890123456");
             _mockJwtSection.Setup(x => x["Issuer"]).Returns("your-issuer");
@@ -34,7 +37,7 @@ namespace AuthService.Tests
 
         private AuthController CreateController()
         {
-            return new AuthController(_mockRepo.Object, _mockConfig.Object, _mockKafka.Object);
+            return new AuthController(_mockRepo.Object, _mockConfig.Object, _mockKafka.Object, _mockJwtService.Object);
         }
 
         [Fact]
