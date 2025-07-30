@@ -1,0 +1,72 @@
+name: AuthService CI
+
+on:
+  push:
+    paths:
+      - 'backend/AuthService/**'
+    branches: [ main ]
+  pull_request:
+    paths:
+      - 'backend/AuthService/**'
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * 0'  # every Sunday at 00:00 UTC
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build .NET Web API
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore AuthService.sln
+        working-directory: backend
+
+      - name: Build solution
+        run: dotnet build --no-restore --configuration Release AuthService.sln
+        working-directory: backend
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: |
+            backend/**/bin/
+            backend/**/obj/
+
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: backend/
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore AuthService.sln
+        working-directory: backend
+
+      - name: Run unit tests
+        run: dotnet test --no-build --configuration Release --logger "trx" AuthService.sln
+        working-directory: backend
