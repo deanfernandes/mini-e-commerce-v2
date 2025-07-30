@@ -158,7 +158,7 @@ namespace AuthService.Api.Controllers
                 return BadRequest("Token has expired.");
             }
 
-            var userIdClaim = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
                 return BadRequest("Invalid token payload.");
 

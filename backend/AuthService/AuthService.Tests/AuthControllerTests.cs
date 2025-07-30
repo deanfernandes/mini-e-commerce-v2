@@ -8,6 +8,7 @@ using AuthService.Api.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Confluent.Kafka;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace AuthService.Tests
 {
@@ -17,8 +18,7 @@ namespace AuthService.Tests
         private readonly Mock<IKafkaProducerService> _mockKafka;
         private readonly Mock<IConfiguration> _mockConfig;
         private readonly Mock<IConfigurationSection> _mockJwtSection;
-
-        private readonly Mock<IJwtService> _mockJwtService;
+        private readonly IJwtService _jwtService;
 
         public AuthControllerTests()
         {
@@ -26,7 +26,7 @@ namespace AuthService.Tests
             _mockKafka = new Mock<IKafkaProducerService>();
             _mockJwtSection = new Mock<IConfigurationSection>();
             _mockConfig = new Mock<IConfiguration>();
-            _mockJwtService = new Mock<IJwtService>();
+            _jwtService = new JwtService(_mockConfig.Object);
 
             _mockJwtSection.Setup(x => x["SecretKey"]).Returns("YourSuperSecretKey1234567890123456");
             _mockJwtSection.Setup(x => x["Issuer"]).Returns("your-issuer");
@@ -37,7 +37,29 @@ namespace AuthService.Tests
 
         private AuthController CreateController()
         {
-            return new AuthController(_mockRepo.Object, _mockConfig.Object, _mockKafka.Object, _mockJwtService.Object);
+            return new AuthController(_mockRepo.Object, _mockConfig.Object, _mockKafka.Object, _jwtService);
+        }
+
+        [Fact]
+        [Trait("Category", "Endpoint")]
+        public async Task GetUsers_ReturnsAllUsers()
+        {
+            var users = new List<User>
+            {
+                new User { Username = "john", Email = "john@example.com", IsEmailVerified = true },
+                new User { Username = "jane", Email = "jane@example.com", IsEmailVerified = false }
+            };
+            _mockRepo.Setup(r => r.GetAllUsersAsync()).ReturnsAsync(users);
+            var controller = CreateController();
+
+            var result = await controller.GetUsers();
+
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var returnedUsers = Assert.IsAssignableFrom<IEnumerable<object>>(okResult.Value);
+            var userList = returnedUsers.Cast<dynamic>().ToList();
+            Assert.Equal(2, userList.Count);
+            Assert.Equal("john", userList[0].Username);
+            Assert.Equal("jane@example.com", userList[1].Email);
         }
 
         [Fact]
@@ -131,25 +153,25 @@ namespace AuthService.Tests
         }
 
         [Fact]
-        [Trait("Category", "Endpoint")]
-        public async Task GetUsers_ReturnsAllUsers()
+        public async Task ConfirmEmail_ValidToken_ReturnsOK()
         {
-            var users = new List<User>
+            var user = new User
             {
-                new User { Username = "john", Email = "john@example.com", IsEmailVerified = true },
-                new User { Username = "jane", Email = "jane@example.com", IsEmailVerified = false }
+                Email = "test@example.com",
+                Username = "testuser",
+                IsEmailVerified = false
             };
-            _mockRepo.Setup(r => r.GetAllUsersAsync()).ReturnsAsync(users);
+            var token = _jwtService.GenerateEmailConfirmationJwt(user);
+            _mockRepo.Setup(r => r.GetUserByIdAsync(user.UserId)).ReturnsAsync(user);
+            _mockRepo.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
             var controller = CreateController();
 
-            var result = await controller.GetUsers();
+            var result = await controller.ConfirmEmail(token);
 
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedUsers = Assert.IsAssignableFrom<IEnumerable<object>>(okResult.Value);
-            var userList = returnedUsers.Cast<dynamic>().ToList();
-            Assert.Equal(2, userList.Count);
-            Assert.Equal("john", userList[0].Username);
-            Assert.Equal("jane@example.com", userList[1].Email);
+            Assert.Equal("Email confirmed successfully.", okResult.Value);
+            Assert.True(user.IsEmailVerified);
+            _mockRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
         }
     }
 }
