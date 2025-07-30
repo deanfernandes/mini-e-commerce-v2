@@ -1,15 +1,14 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+
 WORKDIR /src
 
-COPY backend/Kafka.Contracts/Kafka.Contracts.csproj backend/Kafka.Contracts/
-COPY backend/AuthService/AuthService.Api/AuthService.Api.csproj backend/AuthService/AuthService.Api/
-RUN dotnet restore backend/AuthService/AuthService.Api/AuthService.Api.csproj
+COPY . .
 
-COPY . ./
-
-RUN dotnet publish backend/AuthService/AuthService.Api/AuthService.Api.csproj -c Release -o /publish
+RUN dotnet restore ./AuthService.Api.csproj
+RUN dotnet publish ./AuthService.Api.csproj -c Release -o /publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+
 WORKDIR /app
 
 COPY --from=build /publish .
