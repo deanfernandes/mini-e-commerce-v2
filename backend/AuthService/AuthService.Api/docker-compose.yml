@@ -8,8 +8,8 @@ services:
 
   migrate:
     build:
-      context: ../../..
-      dockerfile: backend/AuthService/AuthService.Api/Dockerfile.migrate
+      context: .
+      dockerfile: Dockerfile.migrate
     depends_on:
       - db
     environment:
@@ -17,8 +17,8 @@ services:
 
   api:
     build:
-      context: ../../..
-      dockerfile: backend/AuthService/AuthService.Api/Dockerfile
+      context: .
+      dockerfile: Dockerfile
     depends_on:
       - db
       - migrate
