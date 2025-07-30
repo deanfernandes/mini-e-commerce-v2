@@ -29,19 +29,19 @@ jobs:
 
       - name: Restore dependencies
         run: dotnet restore AuthService.sln
-        working-directory: backend
+        working-directory: backend/AuthService
 
       - name: Build solution
         run: dotnet build --no-restore --configuration Release AuthService.sln
-        working-directory: backend
+        working-directory: backend/AuthService
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build
           path: |
-            backend/**/bin/
-            backend/**/obj/
+            backend/AuthService/**/bin/
+            backend/AuthService/**/obj/
 
   test:
     name: Run Unit Tests
@@ -56,7 +56,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build
-          path: backend/
+          path: backend/AuthService/
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
@@ -65,8 +65,8 @@ jobs:
 
       - name: Restore dependencies
         run: dotnet restore AuthService.sln
-        working-directory: backend
+        working-directory: backend/AuthService
 
       - name: Run unit tests
-        run: dotnet test --no-build --configuration Release --logger "trx" AuthService.sln
-        working-directory: backend
+        run: dotnet test --no-build --configuration Release AuthService.sln
+        working-directory: backend/AuthService
