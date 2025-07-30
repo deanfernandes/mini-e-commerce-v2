@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Kafka.Contracts.Messages;
 using EmailService.Services;
-using Microsoft.Extensions.Configuration;
 
 namespace EmailService
 {
