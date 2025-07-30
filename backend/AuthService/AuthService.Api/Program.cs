@@ -22,6 +22,8 @@ namespace AuthService.Api {
 
             builder.Services.AddScoped<IUserRepository, UserRepository>();
 
+            builder.Services.AddScoped<IJwtService, JwtService>();
+
             var app = builder.Build();
 
             app.MapControllers();
