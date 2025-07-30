@@ -27,6 +27,13 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
+      - name: Configure GitHub Packages NuGet source
+        run: dotnet nuget add source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+             --name "github" \
+             --username "${{ github.actor }}" \
+             --password "${{ secrets.GITHUB_TOKEN }}" \
+             --store-password-in-clear-text
+
       - name: Restore dependencies
         run: dotnet restore AuthService.sln
         working-directory: backend/AuthService
