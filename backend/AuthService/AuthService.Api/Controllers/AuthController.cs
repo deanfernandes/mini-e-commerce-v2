@@ -49,7 +49,7 @@ namespace AuthService.Api.Controllers
             await _userRepository.AddUserAsync(user);
             await _userRepository.SaveChangesAsync();
 
-            var token = GenerateEmailConfirmationToken(user);
+            var token = GenerateEmailConfirmationJwt(user);
             await _kafkaProducer.ProduceUserRegisteredAsync(new UserRegisteredMessage
             {
                 Email = user.Email,
@@ -61,7 +61,7 @@ namespace AuthService.Api.Controllers
 
         // POST: api/auth/login
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] UserLoginDto dto)
+        public async Task<IActionResult> Login([FromBody] LoginUserDto dto)
         {
             var user = await _userRepository.GetUserByEmailAsync(dto.Email);
             if (user == null)
@@ -70,8 +70,8 @@ namespace AuthService.Api.Controllers
             if (!PasswordService.VerifyPassword(dto.Password, user.PasswordHash))
                 return Unauthorized("Invalid email or password");
 
-            var token = GenerateJwtToken(user);
-            return Ok(new LoginResponseDto { Token = token });
+            var token = GenerateJwt(user);
+            return Ok(new LoginResponseUserDto { Token = token });
         }
 
         // GET: api/auth/users
@@ -79,7 +79,13 @@ namespace AuthService.Api.Controllers
         public async Task<IActionResult> GetUsers()
         {
             var users = (await _userRepository.GetAllUsersAsync())
-                .Select(u => new { u.UserId, u.Username, u.Email, u.IsEmailVerified });
+            .Select(u => new ResponseUserDto 
+            { 
+                UserId = u.UserId, 
+                Username = u.Username, 
+                Email = u.Email, 
+                IsEmailVerified = u.IsEmailVerified 
+            });
 
             return Ok(users);
         }
@@ -91,12 +97,18 @@ namespace AuthService.Api.Controllers
             var user = await _userRepository.GetUserByIdAsync(id);
             if (user == null) return NotFound();
 
-            return Ok(new { user.UserId, user.Username, user.Email, user.IsEmailVerified });
+            return Ok(new ResponseUserDto 
+            {
+                UserId = user.UserId,
+                Username = user.Username,
+                Email = user.Email,
+                IsEmailVerified = user.IsEmailVerified
+            });
         }
 
         // PUT: api/auth/users/{id}
         [HttpPut("users/{id:guid}")]
-        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UserUpdateDto dto)
+        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateUserDto dto)
         {
             var user = await _userRepository.GetUserByIdAsync(id);
             if (user == null) return NotFound();
@@ -185,7 +197,7 @@ namespace AuthService.Api.Controllers
             }
         }
 
-        private string GenerateJwtToken(User user)
+        private string GenerateJwt(User user)
         {
             var jwtSettings = _config.GetSection("JwtSettings");
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!));
@@ -209,7 +221,7 @@ namespace AuthService.Api.Controllers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        private string GenerateEmailConfirmationToken(User user)
+        private string GenerateEmailConfirmationJwt(User user)
         {
             var jwtSettings = _config.GetSection("JwtSettings");
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!));

@@ -6,47 +6,147 @@ using Kafka.Contracts.Messages;
 using AuthService.Api.Controllers;
 using AuthService.Api.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
+using Confluent.Kafka;
 
 namespace AuthService.Tests
 {
     public class AuthControllerTests
     {
+        private readonly Mock<IUserRepository> _mockRepo;
+        private readonly Mock<IKafkaProducerService> _mockKafka;
+        private readonly Mock<IConfiguration> _mockConfig;
+        private readonly Mock<IConfigurationSection> _mockJwtSection;
+
+        public AuthControllerTests()
+        {
+            _mockRepo = new Mock<IUserRepository>();
+            _mockKafka = new Mock<IKafkaProducerService>();
+            _mockJwtSection = new Mock<IConfigurationSection>();
+            _mockConfig = new Mock<IConfiguration>();
+
+            _mockJwtSection.Setup(x => x["SecretKey"]).Returns("YourSuperSecretKey1234567890123456");
+            _mockJwtSection.Setup(x => x["Issuer"]).Returns("your-issuer");
+            _mockJwtSection.Setup(x => x["Audience"]).Returns("your-audience");
+            _mockJwtSection.Setup(x => x["ExpiresInMinutes"]).Returns("60");
+            _mockConfig.Setup(x => x.GetSection("JwtSettings")).Returns(_mockJwtSection.Object);
+        }
+
+        private AuthController CreateController()
+        {
+            return new AuthController(_mockRepo.Object, _mockConfig.Object, _mockKafka.Object);
+        }
+
         [Fact]
         [Trait("Category", "Endpoint")]
         public async Task Register_ReturnsCreatedAtAction_Success()
         {
-            var mockRepo = new Mock<IUserRepository>();
-            var mockKafka = new Mock<IKafkaProducerService>();
-
-            var mockJwtSection = new Mock<IConfigurationSection>();
-            mockJwtSection.Setup(x => x["SecretKey"]).Returns("YourSuperSecretKey1234567890123456");
-            mockJwtSection.Setup(x => x["Issuer"]).Returns("your-issuer");
-            mockJwtSection.Setup(x => x["Audience"]).Returns("your-audience");
-            mockJwtSection.Setup(x => x["ExpiresInMinutes"]).Returns("60");
-
-            var mockConfig = new Mock<IConfiguration>();
-            mockConfig.Setup(x => x.GetSection("JwtSettings")).Returns(mockJwtSection.Object);
-
             var dto = new RegisterUserDto
             {
                 Username = "anon",
                 Email = "anon@example.com",
                 Password = "Password123!"
             };
-
-            mockRepo.Setup(r => r.EmailExistsAsync(dto.Email)).ReturnsAsync(false);
-
-            var controller = new AuthController(mockRepo.Object, mockConfig.Object, mockKafka.Object);
+            _mockRepo.Setup(r => r.EmailExistsAsync(dto.Email)).ReturnsAsync(false);
+            var controller = CreateController();
 
             var result = await controller.Register(dto);
-            var createdResult = Assert.IsType<CreatedAtActionResult>(result);
-            var returnValue = createdResult.Value;
-            Assert.NotNull(returnValue);
 
-            mockRepo.Verify(r => r.EmailExistsAsync(dto.Email), Times.Once);
-            mockRepo.Verify(r => r.AddUserAsync(It.IsAny<User>()), Times.Once);
-            mockRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
-            mockKafka.Verify(k => k.ProduceUserRegisteredAsync(It.IsAny<UserRegisteredMessage>()), Times.Once);
+            var createdResult = Assert.IsType<CreatedAtActionResult>(result);
+            Assert.NotNull(createdResult.Value);
+            _mockRepo.Verify(r => r.EmailExistsAsync(dto.Email), Times.Once);
+            _mockRepo.Verify(r => r.AddUserAsync(It.IsAny<User>()), Times.Once);
+            _mockRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
+            _mockKafka.Verify(k => k.ProduceUserRegisteredAsync(It.IsAny<UserRegisteredMessage>()), Times.Once);
+        }
+
+        [Fact]
+        [Trait("Category", "Endpoint")]
+        public async Task Login_ValidEmailAndPassword_ReturnsJWT()
+        {
+            var user = new User
+            {
+                Username = "john",
+                Email = "john@example.com",
+                PasswordHash = PasswordService.HashPassword("password")
+            };
+            var dto = new LoginUserDto
+            {
+                Email = "john@example.com",
+                Password = "password"
+            };
+            _mockRepo.Setup(r => r.GetUserByEmailAsync(dto.Email)).ReturnsAsync(user);
+            var controller = CreateController();
+
+            var result = await controller.Login(dto);
+
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<LoginResponseUserDto>(okResult.Value);
+            Assert.False(string.IsNullOrEmpty(response.Token));
+        }
+
+        [Fact]
+        [Trait("Category", "Endpoint")]
+        public async Task Login_InvalidEmail_ReturnsUnAuthorized()
+        {
+            var dto = new LoginUserDto
+            {
+                Email = "john@example.com",
+                Password = "password"
+            };
+            _mockRepo.Setup(r => r.GetUserByEmailAsync(dto.Email)).ReturnsAsync((User)null);
+            var controller = CreateController();
+
+            var result = await controller.Login(dto);
+
+            var unauthorized = Assert.IsType<UnauthorizedObjectResult>(result);
+            Assert.Equal("Invalid email or password", unauthorized.Value);
+        }
+
+        [Fact]
+        [Trait("Category", "Endpoint")]
+        public async Task Login_WrongPassword_ReturnsUnAuthorized()
+        {
+            var user = new User
+            {
+                Username = "john",
+                Email = "john@example.com",
+                PasswordHash = PasswordService.HashPassword("correctpassword")
+            };
+            var dto = new LoginUserDto
+            {
+                Email = "john@example.com",
+                Password = "wrongpassword"
+            };
+            _mockRepo.Setup(r => r.GetUserByEmailAsync(dto.Email)).ReturnsAsync(user);
+
+            var controller = CreateController();
+
+            var result = await controller.Login(dto);
+            var unauthorized = Assert.IsType<UnauthorizedObjectResult>(result);
+            Assert.Equal("Invalid email or password", unauthorized.Value);
+        }
+
+        [Fact]
+        [Trait("Category", "Endpoint")]
+        public async Task GetUsers_ReturnsAllUsers()
+        {
+            var users = new List<User>
+            {
+                new User { Username = "john", Email = "john@example.com", IsEmailVerified = true },
+                new User { Username = "jane", Email = "jane@example.com", IsEmailVerified = false }
+            };
+            _mockRepo.Setup(r => r.GetAllUsersAsync()).ReturnsAsync(users);
+            var controller = CreateController();
+
+            var result = await controller.GetUsers();
+
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var returnedUsers = Assert.IsAssignableFrom<IEnumerable<object>>(okResult.Value);
+            var userList = returnedUsers.Cast<dynamic>().ToList();
+            Assert.Equal(2, userList.Count);
+            Assert.Equal("john", userList[0].Username);
+            Assert.Equal("jane@example.com", userList[1].Email);
         }
     }
 }
