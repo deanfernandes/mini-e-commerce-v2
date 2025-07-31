@@ -1,13 +1,16 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+
+ARG GITHUB_USERNAME
+ARG GITHUB_PAT
+
 WORKDIR /src
 
-COPY backend/Kafka.Contracts/Kafka.Contracts.csproj backend/Kafka.Contracts/
-COPY backend/EmailService/EmailService.csproj backend/EmailService/
-RUN dotnet restore backend/EmailService/EmailService.csproj
+RUN dotnet nuget add source "https://nuget.pkg.github.com/${GITHUB_USERNAME}/index.json" --name github --username "${GITHUB_USERNAME}" --password "${GITHUB_PAT}" --store-password-in-clear-text
 
-COPY . ./
+COPY . .
 
-RUN dotnet publish backend/EmailService/EmailService.csproj -c Release -o /publish
+RUN dotnet restore EmailService.csproj
+RUN dotnet publish EmailService.csproj -c Release -o /publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
