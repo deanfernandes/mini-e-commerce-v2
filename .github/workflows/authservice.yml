@@ -42,7 +42,7 @@ jobs:
         env:
           GITHUB_USERNAME: ${{ secrets.MY_GITHUB_USERNAME }}
           GITHUB_PAT: ${{ secrets.MY_GITHUB_PAT }}
-        run: docker-compose -f backend/AuthService/AuthService.Api/docker-compose.yml build
+        run: docker compose -f backend/AuthService/AuthService.Api/docker-compose.yml build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
