@@ -59,7 +59,7 @@ jobs:
           GITHUB_USERNAME: ${{ secrets.MY_GITHUB_USERNAME }}
           GITHUB_PAT: ${{ secrets.MY_GITHUB_PAT }}
         run: |
-          docker build -t ghcr.io/${{ github.repository_owner }}/emailservice:latest --build-arg GITHUB_USERNAME=${{ secrets.MY_GITHUB_USERNAME }} --build-arg GITHUB_PAT=${{ secrets.MY_GITHUB_PAT }} -f backend/EmailService/Dockerfile
+          docker build -t ghcr.io/${{ github.repository_owner }}/emailservice:latest --build-arg GITHUB_USERNAME=${{ secrets.MY_GITHUB_USERNAME }} --build-arg GITHUB_PAT=${{ secrets.MY_GITHUB_PAT }} -f backend/EmailService/Dockerfile backend/EmailService/
 
       - name: Push Docker image
         run: |
