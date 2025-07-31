@@ -1,0 +1,66 @@
+name: EmailService CI
+
+on:
+  push:
+    paths:
+      - 'backend/EmailService/**'
+    branches: [ main ]
+  pull_request:
+    paths:
+      - 'backend/EmailService/**'
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * 0'  # every Sunday at 00:00 UTC
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build .NET Console App
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Configure GitHub Packages NuGet source
+        run: dotnet nuget add source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --name "github" --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
+
+      - name: Restore dependencies
+        run: dotnet restore EmailService.csproj
+        working-directory: backend/EmailService/
+
+      - name: Build solution
+        run: dotnet build --no-restore --configuration Release EmailService.csproj
+        working-directory: backend/EmailService/
+
+  deploy:
+    name: Push Docker Image to GHCR
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker image
+        env:
+          GITHUB_USERNAME: ${{ secrets.MY_GITHUB_USERNAME }}
+          GITHUB_PAT: ${{ secrets.MY_GITHUB_PAT }}
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/emailservice:latest --build-arg GITHUB_USERNAME=${{ secrets.MY_GITHUB_USERNAME }} --build-arg GITHUB_PAT=${{ secrets.MY_GITHUB_PAT }} -f backend/EmailService/Dockerfile
+
+      - name: Push Docker image
+        run: |
+          docker push ghcr.io/${{ github.repository_owner }}/emailservice:latest
