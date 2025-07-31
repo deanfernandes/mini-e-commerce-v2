@@ -38,6 +38,12 @@ jobs:
         run: dotnet build --no-restore --configuration Release AuthService.sln
         working-directory: backend/AuthService
 
+      - name: Build Docker images with Docker Compose
+        env:
+          GITHUB_USERNAME: ${{ secrets.MY_GITHUB_USERNAME }}
+          GITHUB_PAT: ${{ secrets.MY_GITHUB_PAT }}
+        run: docker-compose -f backend/AuthService/AuthService.Api/docker-compose.yml build
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
