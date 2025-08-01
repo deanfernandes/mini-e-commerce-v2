@@ -93,7 +93,8 @@ namespace AuthService.Tests
             {
                 Username = "john",
                 Email = "john@example.com",
-                PasswordHash = PasswordService.HashPassword("password")
+                PasswordHash = PasswordService.HashPassword("password"),
+                IsEmailVerified = true
             };
             var dto = new LoginUserDto
             {
@@ -153,6 +154,32 @@ namespace AuthService.Tests
         }
 
         [Fact]
+        [Trait("Category", "Endpoint")]
+        public async Task Login_ValidUnverifiedEmail_ReturnsUnAuthorized()
+        {
+            string password = "password";
+            var user = new User
+            {
+                Username = "john",
+                Email = "john@example.com",
+                PasswordHash = PasswordService.HashPassword(password)
+            };
+            var dto = new LoginUserDto
+            {
+                Email = "john@example.com",
+                Password = password
+            };
+            _mockRepo.Setup(r => r.GetUserByEmailAsync(dto.Email)).ReturnsAsync(user);
+
+            var controller = CreateController();
+
+            var result = await controller.Login(dto);
+            var unauthorized = Assert.IsType<UnauthorizedObjectResult>(result);
+            Assert.Equal("Email is not verified", unauthorized.Value);
+        }
+
+        [Fact]
+        [Trait("Category", "Endpoint")]
         public async Task ConfirmEmail_ValidToken_ReturnsOK()
         {
             var user = new User

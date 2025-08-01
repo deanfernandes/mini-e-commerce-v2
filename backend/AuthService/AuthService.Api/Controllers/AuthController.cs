@@ -136,10 +136,14 @@ namespace AuthService.Api.Controllers
             if (!PasswordService.VerifyPassword(dto.Password, user.PasswordHash))
                 return Unauthorized("Invalid email or password");
 
+            if (!user.IsEmailVerified)
+                return Unauthorized("Email is not verified");
+
             var token = _jwtService.GenerateLoginJwt(user);
             return Ok(new LoginResponseUserDto { Token = token });
         }
 
+        // POST: api/auth/confirm
         [HttpGet("confirm")]
         public async Task<IActionResult> ConfirmEmail([FromQuery] string token)
         {
