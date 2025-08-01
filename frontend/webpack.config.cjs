@@ -2,18 +2,16 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  entry: './src/index.jsx',
+  entry: './src/index.tsx',
+
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'),
     clean: true,
   },
+
   mode: 'development',
-  devServer: {
-    static: './dist',
-    open: true,
-    hot: true,
-  },
+
   module: {
     rules: [
       {
@@ -21,18 +19,25 @@ module.exports = {
         use: ['style-loader', 'css-loader'],
       },
       {
-        test: /\.(js|jsx)$/,
+        test: /\.(ts|tsx|js|jsx)$/,
         exclude: /node_modules/,
         use: 'babel-loader',
       },
     ],
   },
+
   resolve: {
-    extensions: ['.js', '.jsx'],
+    extensions: ['.tsx', '.ts', '.js', '.jsx'],
   },
+
   plugins: [
     new HtmlWebpackPlugin({
-      template: 'public/index.html',
+      template: './public/index.html',
     }),
   ],
+
+  devServer: {
+    static: './dist',
+    hot: true,
+  },
 };
