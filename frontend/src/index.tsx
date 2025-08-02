@@ -1,10 +1,10 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './style.css';
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import './index.css';
+import App from './App';
 
-const App: React.FC = () => (
-  <h1 className='font-bold text-blue-600 text-3xl underline'>Hello, React + TypeScript + Webpack + Tailwind CSS!</h1>
-);
-
-const root = ReactDOM.createRoot(document.getElementById('root')!);
-root.render(<App />);
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
