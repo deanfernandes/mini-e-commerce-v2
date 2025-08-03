@@ -10,13 +10,14 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      <main className="flex-grow"></main>
+      <main className="flex-grow">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
       <Footer />
     </div>
   );

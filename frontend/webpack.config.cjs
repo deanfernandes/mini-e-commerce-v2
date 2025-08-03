@@ -37,11 +37,19 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: "./public/index.html",
+      favicon: "./public/favicon.ico",
     }),
   ],
 
   devServer: {
-    static: "./dist",
+    static: [
+      {
+        directory: path.join(__dirname, "dist"),
+      },
+      {
+        directory: path.join(__dirname, "public"), // <-- add this
+      },
+    ],
     hot: true,
     historyApiFallback: true,
   },
