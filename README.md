@@ -3,4 +3,6 @@
 ![EmailSerivce CI](https://github.com/deanfernandes/mini-e-commerce-v2/actions/workflows/emailservice.yml/badge.svg)
 ![ProductSerivce CI](https://github.com/deanfernandes/mini-e-commerce-v2/actions/workflows/productservice.yml/badge.svg)
 
+![Frontend CI](https://github.com/deanfernandes/mini-e-commerce-v2/actions/workflows/frontend.yml/badge.svg)
+
 WIP
