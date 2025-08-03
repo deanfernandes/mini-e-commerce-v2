@@ -12,7 +12,7 @@ const Login: React.FC = () => {
     password: "",
   });
   const navigate = useNavigate();
-  const [error, setError] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -32,11 +32,12 @@ const Login: React.FC = () => {
       });
 
       if (!res.ok) {
-        setError(true);
+        const text = await res.text();
+        setError(text || "Something went wrong. Please try again later.");
         return;
       }
 
-      setError(false);
+      setError(null);
 
       setFormData({
         email: "",
@@ -47,7 +48,7 @@ const Login: React.FC = () => {
         navigate("/");
       }, 1500);
     } catch {
-      setError(true);
+      setError("Something went wrong. Please try again later.");
     }
   };
 
@@ -96,11 +97,7 @@ const Login: React.FC = () => {
           Login
         </button>
 
-        {error && (
-          <p className="text-center text-sm text-red-500">
-            Something went wrong. Please try again later.
-          </p>
-        )}
+        {error && <p className="text-center text-sm text-red-500">{error}</p>}
       </form>
     </>
   );
