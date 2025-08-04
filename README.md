@@ -6,3 +6,5 @@
 ![Frontend CI](https://github.com/deanfernandes/mini-e-commerce-v2/actions/workflows/frontend.yml/badge.svg)
 
 WIP
+
+temp frontend link (http://myminiecommercebucket.s3-website.eu-north-1.amazonaws.com/)
