@@ -5,13 +5,16 @@ import App from "./App";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "./context/theme/ThemeContextProvider";
+import AuthProvider from "./context/auth/AuthContextProvider";
 
 createRoot(document.getElementById("root")!).render(
-  <ThemeProvider>
-    <BrowserRouter>
-      <StrictMode>
-        <App />
-      </StrictMode>
-    </BrowserRouter>
-  </ThemeProvider>
+  <AuthProvider>
+    <ThemeProvider>
+      <BrowserRouter>
+        <StrictMode>
+          <App />
+        </StrictMode>
+      </BrowserRouter>
+    </ThemeProvider>
+  </AuthProvider>
 );

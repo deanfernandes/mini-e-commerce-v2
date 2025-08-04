@@ -1,6 +1,6 @@
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-blue-950 text-white py-6">
+    <footer className="bg-primary-dark text-gray-200 py-6">
       <div className="flex flex-col items-center space-y-4">
         <p className="text-sm text-center font-bold">
           &copy; 2025 Dean Fernandes. All rights reserved.

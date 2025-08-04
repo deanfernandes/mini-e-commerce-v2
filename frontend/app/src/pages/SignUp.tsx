@@ -58,34 +58,34 @@ const SignUp: React.FC = () => {
 
   return (
     <>
-      <h2 className="font-bold text-2xl ml-2 mt-2">Sign Up:</h2>
+      <h2 className="font-bold text-2xl mx-auto mt-10">Sign Up:</h2>
 
       <form
         className="flex flex-col w-full md:max-w-md mx-auto gap-y-4 mt-5"
         onSubmit={handleSubmit}
       >
-        <div className="flex flex-col">
+        <div className="flex flex-col mx-5 md:mx-0">
           <label htmlFor="username" className="mb-1 font-medium">
             Name
           </label>
           <input
             type="text"
             id="username"
-            className="border border-gray-300 rounded"
+            className="border border-gray-300 rounded py-1"
             value={formData.username}
             onChange={handleChange}
             required
           />
         </div>
 
-        <div className="flex flex-col">
+        <div className="flex flex-col mx-5 md:mx-0">
           <label htmlFor="email" className="mb-1 font-medium">
             Email
           </label>
           <input
             type="email"
             id="email"
-            className="border border-gray-300 rounded"
+            className="border border-gray-300 rounded py-1"
             value={formData.email}
             onChange={handleChange}
             required
@@ -93,14 +93,14 @@ const SignUp: React.FC = () => {
           />
         </div>
 
-        <div className="flex flex-col">
+        <div className="flex flex-col mx-5 md:mx-0">
           <label htmlFor="password" className="mb-1 font-medium">
             Password
           </label>
           <input
             type="password"
             id="password"
-            className="border border-gray-300 rounded"
+            className="border border-gray-300 rounded py-1"
             value={formData.password}
             onChange={handleChange}
             required
@@ -110,7 +110,7 @@ const SignUp: React.FC = () => {
 
         <button
           type="submit"
-          className="bg-blue-400 font-medium rounded text-white hover:bg-blue-500 transition py-2 cursor-pointer"
+          className="bg-primary font-medium rounded text-gray-200 hover:bg-primary-light transition py-2 cursor-pointer  mx-5 md:mx-0"
         >
           Sign Up
         </button>
