@@ -34,8 +34,12 @@ const Login: React.FC = () => {
       });
 
       if (!res.ok) {
-        const text = await res.text();
-        setError(text || "Something went wrong. Please try again later.");
+        if (res.status === 401) {
+          const text = await res.text();
+          setError(text || "Unauthorized access.");
+        } else {
+          setError("Something went wrong. Please try again later.");
+        }
         return;
       }
 
@@ -48,10 +52,6 @@ const Login: React.FC = () => {
 
       const data = await res.json();
       login(data.token);
-
-      window.setTimeout(() => {
-        navigate("/");
-      }, 1500);
     } catch {
       setError("Something went wrong. Please try again later.");
     }
