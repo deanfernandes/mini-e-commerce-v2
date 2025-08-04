@@ -4,11 +4,14 @@ import "./index.css";
 import App from "./App";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import { BrowserRouter } from "react-router-dom";
+import { ThemeProvider } from "./context/theme/ThemeContextProvider";
 
 createRoot(document.getElementById("root")!).render(
-  <BrowserRouter>
-    <StrictMode>
-      <App />
-    </StrictMode>
-  </BrowserRouter>
+  <ThemeProvider>
+    <BrowserRouter>
+      <StrictMode>
+        <App />
+      </StrictMode>
+    </BrowserRouter>
+  </ThemeProvider>
 );
