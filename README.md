@@ -9,4 +9,6 @@ WIP
 
 Live AWS (http://13.62.86.133/)
 
+demo (https://youtu.be/FbT3fzvo99k)
+
 ~~temp frontend link (http://myminiecommercebucket.s3-website.eu-north-1.amazonaws.com/)~~
