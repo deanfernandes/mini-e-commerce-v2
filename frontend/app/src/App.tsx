@@ -6,6 +6,9 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import SignUp from "./pages/SignUp";
 import { useAuth } from "./hooks/useAuth";
+import MainLayout from "./layout/MainLayout";
+import Products from "./pages/Products";
+import ProductDetails from "./pages/ProductDetails";
 
 export default function App() {
   const { token } = useAuth();
@@ -13,20 +16,25 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-grow flex flex-col">
-        <Routes>
-          <Route path="/" element={<Home />} />
+      <Routes>
+        <Route path="/" element={<MainLayout token={token} />}>
+          <Route index element={<Home />} />
           <Route
-            path="/signup"
+            path="signup"
             element={!token ? <SignUp /> : <Navigate to="/" replace />}
           />
           <Route
-            path="/login"
+            path="login"
             element={!token ? <Login /> : <Navigate to="/" replace />}
           />
+          <Route
+            path="products"
+            element={token ? <Products /> : <Navigate to="/login" replace />}
+          />
+          <Route path="products/:id" element={<ProductDetails />} />
           <Route path="*" element={<NotFound />} />
-        </Routes>
-      </main>
+        </Route>
+      </Routes>
       <Footer />
     </div>
   );
