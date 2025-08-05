@@ -7,4 +7,6 @@
 
 WIP
 
-temp frontend link (http://myminiecommercebucket.s3-website.eu-north-1.amazonaws.com/)
+Live AWS (http://13.62.86.133/)
+
+~~temp frontend link (http://myminiecommercebucket.s3-website.eu-north-1.amazonaws.com/)~~
