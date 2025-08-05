@@ -28,5 +28,6 @@ services:
         condition: service_completed_successfully
     environment:
       ConnectionStrings__DefaultConnection: ${CONNECTIONSTRINGS__DEFAULTCONNECTION}
+      ASPNETCORE_URLS: http://+:8081
     ports:
-      - "8080:8080"
+      - "8081:8081"
