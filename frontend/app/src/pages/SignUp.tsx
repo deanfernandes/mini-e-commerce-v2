@@ -58,7 +58,7 @@ const SignUp: React.FC = () => {
 
   return (
     <>
-      <h2 className="font-bold text-2xl mx-auto mt-10">Sign Up:</h2>
+      <h2 className="text-2xl font-semibold mx-auto mt-10">Sign Up:</h2>
 
       <form
         className="flex flex-col w-full md:max-w-md mx-auto gap-y-4 mt-5"

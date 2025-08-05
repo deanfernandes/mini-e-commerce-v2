@@ -8,7 +8,6 @@ import { useAuth } from "../hooks/useAuth";
 const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { token, username, logout } = useAuth();
-  console.log(`token: ${token}`);
 
   return (
     <header className="flex items-center justify-between text-gray-200 bg-primary py-4 relative">

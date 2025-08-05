@@ -15,12 +15,18 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
+    //TODO: rm test
+    setToken("abc");
+    setUsername("dean");
+
+    /*
     const storedToken = localStorage.getItem("jwt");
     if (storedToken) {
       setToken(storedToken);
       const decoded: JwtPayload = jwtDecode<JwtPayload>(storedToken);
       setUsername(decoded.username);
     }
+      */
   }, []);
 
   const login = (newToken: string) => {
