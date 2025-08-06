@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from "react";
-import AuthContext, { type AuthContextType } from "./AuthContext";
+import AuthContext from "./AuthContext";
 import { jwtDecode } from "jwt-decode";
 
 type JwtPayload = {
