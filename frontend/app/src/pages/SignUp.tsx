@@ -75,6 +75,7 @@ const SignUp: React.FC = () => {
             value={formData.username}
             onChange={handleChange}
             required
+            disabled={success}
           />
         </div>
 
@@ -90,6 +91,7 @@ const SignUp: React.FC = () => {
             onChange={handleChange}
             required
             autoComplete="email"
+            disabled={success}
           />
         </div>
 
@@ -105,19 +107,23 @@ const SignUp: React.FC = () => {
             onChange={handleChange}
             required
             autoComplete="new-password"
+            disabled={success}
           />
         </div>
 
         <button
           type="submit"
-          className="bg-primary font-medium rounded text-gray-200 hover:bg-primary-light transition py-2 cursor-pointer  mx-5 md:mx-0"
+          className={`bg-primary font-medium rounded text-gray-200 hover:bg-primary-light transition py-2 cursor-pointer  mx-5 md:mx-0 ${
+            success ? "cursor-default pointer-events-none bg-primary-light" : ""
+          }`}
+          disabled={success}
         >
           Sign Up
         </button>
 
         {success && (
           <p className="text-center text-sm text-green-500">
-            Successfully signed up!
+            Successfully signed up! Redirecting...
           </p>
         )}
 
