@@ -3,11 +3,14 @@ using ProductService.Data.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ProductService.Data.Repositories;
+using Microsoft.AspNetCore.Authorization;
+using ProductService.Api.Models;
 
 namespace ProductsService.Data.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ProductsController : ControllerBase
 {
     private readonly IProductRepository _repository;
