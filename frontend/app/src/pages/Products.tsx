@@ -1,16 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { Product } from "../types/Product";
 import ProductCard from "../components/ProductCard";
+import { useAuth } from "../hooks/useAuth";
 
 const Products: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const { token } = useAuth();
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch("/api/products/");
+        const res = await fetch("/api/products/", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
         const data = await res.json();
         const transformed = data.map((item: any) => ({
           id: item.productId,

@@ -1,17 +1,23 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Product } from "../types/Product";
+import { useAuth } from "../hooks/useAuth";
 
 function ProductDetails() {
   const { id } = useParams<{ id: string }>();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { token } = useAuth();
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`/api/products/${id}`);
+        const res = await fetch(`/api/products/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const data = await res.json();
         setProduct(data);
       } catch (err) {
