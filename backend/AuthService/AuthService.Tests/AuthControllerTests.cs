@@ -16,28 +16,27 @@ namespace AuthService.Tests
     {
         private readonly Mock<IUserRepository> _mockRepo;
         private readonly Mock<IKafkaProducerService> _mockKafka;
-        private readonly Mock<IConfiguration> _mockConfig;
-        private readonly Mock<IConfigurationSection> _mockJwtSection;
         private readonly IJwtService _jwtService;
 
         public AuthControllerTests()
         {
             _mockRepo = new Mock<IUserRepository>();
             _mockKafka = new Mock<IKafkaProducerService>();
-            _mockJwtSection = new Mock<IConfigurationSection>();
-            _mockConfig = new Mock<IConfiguration>();
-            _jwtService = new JwtService(_mockConfig.Object);
 
-            _mockJwtSection.Setup(x => x["SecretKey"]).Returns("YourSuperSecretKey1234567890123456");
-            _mockJwtSection.Setup(x => x["Issuer"]).Returns("your-issuer");
-            _mockJwtSection.Setup(x => x["Audience"]).Returns("your-audience");
-            _mockJwtSection.Setup(x => x["ExpiresInMinutes"]).Returns("60");
-            _mockConfig.Setup(x => x.GetSection("JwtSettings")).Returns(_mockJwtSection.Object);
+            var jwtSettings = new JwtSettings
+            {
+                SecretKey = "YourSuperSecretKey1234567890123456",
+                Issuer = "your-issuer",
+                Audience = "your-audience",
+                ExpiresInMinutes = 60
+            };
+
+            _jwtService = new JwtService(jwtSettings);
         }
 
         private AuthController CreateController()
         {
-            return new AuthController(_mockRepo.Object, _mockConfig.Object, _mockKafka.Object, _jwtService);
+            return new AuthController(_mockRepo.Object, _mockKafka.Object, _jwtService);
         }
 
         [Fact]

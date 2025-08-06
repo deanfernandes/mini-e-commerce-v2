@@ -11,24 +11,56 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json;
 using AuthService.Api.Repositories;
 using Kafka.Contracts.Messages;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AuthService.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class AuthController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
-        private readonly IConfiguration _config;
         private readonly IKafkaProducerService _kafkaProducer;
         private readonly IJwtService _jwtService;
 
-        public AuthController(IUserRepository userRepository, IConfiguration config, IKafkaProducerService kafkaProducer, IJwtService jwtService)
+        public AuthController(IUserRepository userRepository, IKafkaProducerService kafkaProducer, IJwtService jwtService)
         {
             _userRepository = userRepository;
-            _config = config;
             _kafkaProducer = kafkaProducer;
             _jwtService = jwtService;
+        }
+
+        // POST: api/auth/users
+        [HttpPost("users")]
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (await _userRepository.EmailExistsAsync(dto.Email))
+                return Conflict("Email already registered.");
+
+            var user = new User
+            {
+                Username = dto.Username,
+                Email = dto.Email,
+                PasswordHash = PasswordService.HashPassword(dto.Password),
+                IsEmailVerified = true
+            };
+
+            await _userRepository.AddUserAsync(user);
+            await _userRepository.SaveChangesAsync();
+
+            var response = new ResponseUserDto
+            {
+                UserId = user.UserId,
+                Username = user.Username,
+                Email = user.Email,
+                IsEmailVerified = user.IsEmailVerified
+            };
+
+            return CreatedAtAction(nameof(GetUser), new { id = user.UserId }, response);
         }
 
         // GET: api/auth/users
@@ -36,12 +68,12 @@ namespace AuthService.Api.Controllers
         public async Task<IActionResult> GetUsers()
         {
             var users = (await _userRepository.GetAllUsersAsync())
-            .Select(u => new ResponseUserDto 
-            { 
-                UserId = u.UserId, 
-                Username = u.Username, 
-                Email = u.Email, 
-                IsEmailVerified = u.IsEmailVerified 
+            .Select(u => new ResponseUserDto
+            {
+                UserId = u.UserId,
+                Username = u.Username,
+                Email = u.Email,
+                IsEmailVerified = u.IsEmailVerified
             });
 
             return Ok(users);
@@ -54,7 +86,7 @@ namespace AuthService.Api.Controllers
             var user = await _userRepository.GetUserByIdAsync(id);
             if (user == null) return NotFound();
 
-            return Ok(new ResponseUserDto 
+            return Ok(new ResponseUserDto
             {
                 UserId = user.UserId,
                 Username = user.Username,
@@ -97,6 +129,7 @@ namespace AuthService.Api.Controllers
 
         // POST: api/auth/register
         [HttpPost("register")]
+        [AllowAnonymous]
         public async Task<IActionResult> Register(RegisterUserDto dto)
         {
             if (!ModelState.IsValid)
@@ -127,6 +160,7 @@ namespace AuthService.Api.Controllers
 
         // POST: api/auth/login
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginUserDto dto)
         {
             var user = await _userRepository.GetUserByEmailAsync(dto.Email);
@@ -145,6 +179,7 @@ namespace AuthService.Api.Controllers
 
         // POST: api/auth/confirm
         [HttpGet("confirm")]
+        [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail([FromQuery] string token)
         {
             if (string.IsNullOrWhiteSpace(token))
