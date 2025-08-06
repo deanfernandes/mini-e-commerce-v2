@@ -29,5 +29,9 @@ services:
     environment:
       ConnectionStrings__DefaultConnection: ${CONNECTIONSTRINGS__DEFAULTCONNECTION}
       ASPNETCORE_URLS: http://+:8081
+      JwtSettings__SecretKey: ${JWTSETTINGS__SECRETKEY}
+      JwtSettings__Issuer: ${JWTSETTINGS__ISSUER}
+      JwtSettings__Audience: ${JWTSETTINGS__AUDIENCE}
+      JwtSettings__ExpiresInMinutes: ${JWTSETTINGS__EXPIRESINMINUTES}
     ports:
       - "8081:8081"
