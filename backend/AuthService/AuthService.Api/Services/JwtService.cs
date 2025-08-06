@@ -2,24 +2,22 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using AuthService.Api.Models;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AuthService.Api.Services
 {
     public class JwtService : IJwtService
     {
-        private readonly IConfiguration _config;
+        private readonly JwtSettings _jwtSettings;
 
-        public JwtService(IConfiguration config)
+        public JwtService(JwtSettings jwtSettings)
         {
-            _config = config;
+            _jwtSettings = jwtSettings;
         }
 
         public string GenerateLoginJwt(User user)
         {
-            var jwtSettings = _config.GetSection("JwtSettings");
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
@@ -30,10 +28,10 @@ namespace AuthService.Api.Services
             };
 
             var token = new JwtSecurityToken(
-                issuer: jwtSettings["Issuer"],
-                audience: jwtSettings["Audience"],
+                issuer: _jwtSettings.Issuer,
+                audience: _jwtSettings.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(jwtSettings["ExpiresInMinutes"])),
+                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiresInMinutes),
                 signingCredentials: creds
             );
 
@@ -42,8 +40,7 @@ namespace AuthService.Api.Services
 
         public string GenerateEmailConfirmationJwt(User user)
         {
-            var jwtSettings = _config.GetSection("JwtSettings");
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
@@ -54,8 +51,8 @@ namespace AuthService.Api.Services
             };
 
             var token = new JwtSecurityToken(
-                issuer: jwtSettings["Issuer"],
-                audience: jwtSettings["Audience"],
+                issuer: _jwtSettings.Issuer,
+                audience: _jwtSettings.Audience,
                 claims: claims,
                 expires: DateTime.UtcNow.AddHours(24),
                 signingCredentials: creds
@@ -66,8 +63,7 @@ namespace AuthService.Api.Services
 
         public ClaimsPrincipal? ValidateEmailConfirmationJwt(string token)
         {
-            var jwtSettings = _config.GetSection("JwtSettings");
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
             var tokenHandler = new JwtSecurityTokenHandler();
 
             try
@@ -75,9 +71,9 @@ namespace AuthService.Api.Services
                 var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
                 {
                     ValidateIssuer = true,
-                    ValidIssuer = jwtSettings["Issuer"],
+                    ValidIssuer = _jwtSettings.Issuer,
                     ValidateAudience = true,
-                    ValidAudience = jwtSettings["Audience"],
+                    ValidAudience = _jwtSettings.Audience,
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = key,
                     ValidateLifetime = true,

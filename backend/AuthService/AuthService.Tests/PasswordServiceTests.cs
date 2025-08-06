@@ -5,16 +5,14 @@ namespace AuthService.Tests
     public class PasswordServiceTests
     {
         [Fact]
-        public void HashPassword_ForSameInput_ShouldReturnConsistentHash()
+        public void HashPassword_ShouldCreateValidHash_ThatVerifies()
         {
             string password = "MySecret123";
 
-            string hash1 = PasswordService.HashPassword(password);
-            string hash2 = PasswordService.HashPassword(password);
+            string hash = PasswordService.HashPassword(password);
 
-            Assert.NotNull(hash1);
-            Assert.NotNull(hash2);
-            Assert.Equal(hash1, hash2);
+            Assert.False(string.IsNullOrEmpty(hash));
+            Assert.True(PasswordService.VerifyPassword(password, hash));
         }
 
         [Fact]
@@ -32,15 +30,16 @@ namespace AuthService.Tests
         }
 
         [Fact]
-        public void HashPassword_ShouldReturnBase64EncodedString()
+        public void HashPassword_ShouldReturnValidBCryptHashFormat()
         {
             string password = "AnotherPassword";
 
             string hash = PasswordService.HashPassword(password);
 
-            byte[] decoded = Convert.FromBase64String(hash);
-            Assert.NotNull(decoded);
-            Assert.True(decoded.Length > 0);
+            Assert.False(string.IsNullOrEmpty(hash));
+            Assert.StartsWith("$2", hash);
+            Assert.Contains("$", hash);
+            Assert.True(hash.Length >= 60);
         }
 
         [Fact]

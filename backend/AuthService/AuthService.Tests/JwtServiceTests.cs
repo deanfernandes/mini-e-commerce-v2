@@ -7,20 +7,19 @@ namespace AuthService.Tests
 {
     public class JwtServiceTests
     {
-        private readonly Mock<IConfiguration> _mockConfig;
-        private readonly Mock<IConfigurationSection> _mockJwtSection;
         private readonly JwtService _jwtService;
 
         public JwtServiceTests()
         {
-            _mockConfig = new Mock<IConfiguration>();
-            _mockJwtSection = new Mock<IConfigurationSection>();
-            _mockJwtSection.Setup(x => x["SecretKey"]).Returns("YourSuperSecretKey1234567890123456");
-            _mockJwtSection.Setup(x => x["Issuer"]).Returns("your-issuer");
-            _mockJwtSection.Setup(x => x["Audience"]).Returns("your-audience");
-            _mockConfig.Setup(x => x.GetSection("JwtSettings")).Returns(_mockJwtSection.Object);
+            var jwtSettings = new JwtSettings
+            {
+                SecretKey = "YourSuperSecretKey1234567890123456",
+                Issuer = "your-issuer",
+                Audience = "your-audience",
+                ExpiresInMinutes = 60
+            };
 
-            _jwtService = new JwtService(_mockConfig.Object);
+            _jwtService = new JwtService(jwtSettings);
         }
 
         [Fact]

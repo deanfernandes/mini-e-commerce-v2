@@ -14,7 +14,7 @@ RUN dotnet nuget add source "https://nuget.pkg.github.com/${GITHUB_USERNAME}/ind
 COPY . .
 
 RUN dotnet restore ./AuthService.Api.csproj
-RUN dotnet tool install --global dotnet-ef --version 7.0.0
+RUN dotnet tool install --global dotnet-ef --version 9.0.7
 
 ENV PATH="$PATH:/root/.dotnet/tools"
 

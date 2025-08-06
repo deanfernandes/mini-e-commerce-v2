@@ -19,10 +19,24 @@ namespace AuthService.Api.Services
             _producer = new ProducerBuilder<Null, string>(kafkaConfig).Build();
         }
 
-        public async Task ProduceUserRegisteredAsync(UserRegisteredMessage @event)
+        public async Task ProduceUserRegisteredAsync(UserRegisteredMessage @event, CancellationToken cancellationToken = default)
         {
             var message = JsonSerializer.Serialize(@event);
-            await _producer.ProduceAsync(Topics.UserRegistered, new Message<Null, string> { Value = message });
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            cts.CancelAfter(TimeSpan.FromSeconds(5));
+
+            try
+            {
+                await _producer.ProduceAsync(Topics.UserRegistered, new Message<Null, string> { Value = message }, cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                Console.WriteLine("Kafka produce timed out.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Kafka produce failed: {ex.Message}");
+            }
         }
     }
 }
