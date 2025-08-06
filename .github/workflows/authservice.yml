@@ -3,14 +3,14 @@ name: AuthService CI
 on:
   push:
     paths:
-      - 'backend/AuthService/**'
-    branches: [ main ]
+      - "backend/AuthService/**"
+    branches: [main]
   pull_request:
     paths:
-      - 'backend/AuthService/**'
-    branches: [ main ]
+      - "backend/AuthService/**"
+    branches: [main]
   schedule:
-    - cron: '0 0 * * 0'  # every Sunday at 00:00 UTC
+    - cron: "0 0 * * 0" # every Sunday at 00:00 UTC
   workflow_dispatch:
 
 jobs:
@@ -76,11 +76,12 @@ jobs:
       - name: Run unit tests
         run: dotnet test --no-build --configuration Release AuthService.sln
         working-directory: backend/AuthService
-  
+
   deploy:
     name: Push Docker Images to GHCR
     runs-on: ubuntu-latest
     needs: [build, test]
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
 
     steps:
       - name: Checkout code
