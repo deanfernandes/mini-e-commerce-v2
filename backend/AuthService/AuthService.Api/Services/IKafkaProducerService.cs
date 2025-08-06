@@ -4,6 +4,6 @@ namespace AuthService.Api.Services
 {
     public interface IKafkaProducerService
     {
-        public Task ProduceUserRegisteredAsync(UserRegisteredMessage @event);
+        Task ProduceUserRegisteredAsync(UserRegisteredMessage @event, CancellationToken cancellationToken = default);
     }
 }

@@ -81,7 +81,7 @@ namespace AuthService.Tests
             _mockRepo.Verify(r => r.EmailExistsAsync(dto.Email), Times.Once);
             _mockRepo.Verify(r => r.AddUserAsync(It.IsAny<User>()), Times.Once);
             _mockRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
-            _mockKafka.Verify(k => k.ProduceUserRegisteredAsync(It.IsAny<UserRegisteredMessage>()), Times.Once);
+            _mockKafka.Verify(k => k.ProduceUserRegisteredAsync(It.IsAny<UserRegisteredMessage>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]

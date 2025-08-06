@@ -149,6 +149,7 @@ namespace AuthService.Api.Controllers
             await _userRepository.SaveChangesAsync();
 
             var token = _jwtService.GenerateEmailConfirmationJwt(user);
+            Console.WriteLine($"TOKEN: {token}");
             await _kafkaProducer.ProduceUserRegisteredAsync(new UserRegisteredMessage
             {
                 Email = user.Email,

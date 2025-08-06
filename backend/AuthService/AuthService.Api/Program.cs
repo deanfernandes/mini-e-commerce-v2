@@ -32,8 +32,6 @@ namespace AuthService.Api {
 
             builder.Services.AddScoped<IJwtService, JwtService>();
 
-            var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
-            var key = Encoding.UTF8.GetBytes(jwtSettings.SecretKey);
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -41,6 +39,10 @@ namespace AuthService.Api {
             })
             .AddJwtBearer(options =>
             {
+                var sp = builder.Services.BuildServiceProvider();
+                var jwtSettings = sp.GetRequiredService<IOptions<JwtSettings>>().Value;
+                var key = Encoding.UTF8.GetBytes(jwtSettings.SecretKey);
+
                 options.RequireHttpsMetadata = false;
                 options.SaveToken = true;
                 options.TokenValidationParameters = new TokenValidationParameters
