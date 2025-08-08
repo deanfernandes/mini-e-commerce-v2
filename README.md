@@ -7,7 +7,7 @@
 
 WIP
 
-Live AWS (http://13.62.86.133/)
+~~Live AWS (http://13.62.86.133/)~~ (stopped instance)
 
 demo [(https://youtu.be/FbT3fzvo99k)](https://youtu.be/vyczr_ZQ39U)
 
